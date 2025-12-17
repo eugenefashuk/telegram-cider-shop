@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сидр - Интернет Магазин</title>
+    <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
+    <style>
+        :root {
+            --tg-color-scheme: light;
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-hint-color: #999999;
+            --tg-theme-link-color: #0088cc;
+            --tg-theme-button-color: #0088cc;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #f0f0f0;
+            --primary-color: #8B4513;
+            --accent-color: #D2691E;
+            --success-color: #10a37f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 10px;
+            margin-bottom: 80px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--tg-theme-secondary-bg-color);
+            overflow-x: auto;
+        }
+
+        .nav-tabs button {
+            flex: 1;
+            padding: 12px 15px;
+            background: none;
+            border: none;
+            color: var(--tg-theme-hint-color);
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-tabs button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .product-card:active {
+            transform: scale(0.98);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 12px;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: var(--tg-theme-text-color);
+        }
+
+        .product-price {
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .product-add-btn {
+            width: 100%;
+            padding: 8px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .product-add-btn:active {
+            background: var(--accent-color);
+        }
+
+        .product-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: flex-end;
+        }
+
+        .product-detail-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-height: 80vh;
+            border-radius: 15px 15px 0 0;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--tg-theme-secondary-bg-color);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .detail-image {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .detail-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .detail-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--tg-theme-text-color);
+        }
+
+        .detail-price {
+            font-size: 24px;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .detail-description {
+            color: var(--tg-theme-hint-color);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            background: var(--tg-theme-secondary-bg-color);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .qty-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .qty-display {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .cart-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cart-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .cart-item-qty {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-right: 10px;
+        }
+
+        .qty-small-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .remove-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .cart-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .summary-row.total {
+            border-top: 2px solid var(--tg-theme-secondary-bg-color);
+            padding-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--tg-theme-hint-color);
+            font-size: 16px;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .profile-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+        }
+
+        .profile-info h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .profile-info p {
+            color: var(--tg-theme-hint-color);
+            font-size: 13px;
+        }
+
+        .profile-stat {
+            display: flex;
+            justify-content: space-around;
+            background: var(--tg-theme-secondary-bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
+            margin-top: 5px;
+        }
+
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .order-item {
+            background: var(--tg-theme-secondary-bg-color);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .order-date {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .order-total {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .fixed-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--tg-theme-secondary-bg-color);
+            display: flex;
+            gap: 0;
+            padding: 10px;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
+            transition: color 0.2s;
+            border-radius: 8px;
+        }
+
+        .nav-btn.active {
+            color: var(--primary-color);
+            background: var(--tg-theme-secondary-bg-color);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .cart-btn-wrapper {
+            position: relative;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 10px;
+            right: 10px;
+            background: var(--success-color);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            text-align: center;
+            animation: slideIn 0.3s;
+            z-index: 2000;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-modal.active {
+            display: flex;
+        }
+
+        .payment-box {
+            background: white;
+            padding: 30px 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: popIn 0.3s;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); }
+            to { transform: scale(1); }
+        }
+
+        .payment-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .payment-box h2 {
+            margin-bottom: 10px;
+        }
+
+        .payment-amount {
+            font-size: 32px;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .payment-method {
+            padding: 12px;
+            border: 2px solid var(--tg-theme-secondary-bg-color);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .payment-method:active {
+            border-color: var(--primary-color);
+            background: var(--tg-theme-secondary-bg-color);
+        }
+
+        .close-payment-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-modal.active {
+            display: flex;
+        }
+
+        .success-box {
+            background: white;
+            padding: 40px 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 0.6s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .success-box h2 {
+            color: var(--success-color);
+            margin-bottom: 15px;
+        }
+
+        .ok-btn {
+            padding: 12px 30px;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍎 Сидр Магазин</h1>
+            <p>Качественный сидр доставка</p>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-tab="products">Каталог</button>
+            <button class="tab-btn" data-tab="cart">Корзина</button>
+            <button class="tab-btn" data-tab="profile">Профиль</button>
+        </div>
+
+        <!-- PRODUCTS SECTION -->
+        <div class="content-section active" id="products">
+            <div class="products-grid" id="productsGrid"></div>
+        </div>
+
+        <!-- CART SECTION -->
+        <div class="content-section" id="cart">
+            <div id="cartContent"></div>
+        </div>
+
+        <!-- PROFILE SECTION -->
+        <div class="content-section" id="profile">
+            <div class="profile-header">
+                <div class="profile-avatar">👤</div>
+                <div class="profile-info">
+                    <h2 id="userName">Гость</h2>
+                    <p id="userTelegram">@username</p>
+                </div>
+            </div>
+
+            <div class="profile-stat">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalOrders">0</div>
+                    <div class="stat-label">Заказов</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalSpent">0₽</div>
+                    <div class="stat-label">Потрачено</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="orderCount">0</div>
+                    <div class="stat-label">Бутылок</div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3 style="margin-bottom: 15px;">История заказов</h3>
+                <div class="orders-list" id="ordersList">
+                    <div class="empty-message">Заказов нет</div>
+                </div>
+            </div>
+
+            <button class="checkout-btn" onclick="logout()" style="background: #ff6b6b;">Выход</button>
+        </div>
+    </div>
+
+    <!-- FIXED BOTTOM NAVIGATION -->
+    <div class="fixed-bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('products')">
+            <span class="nav-icon">📋</span>
+            <span>Каталог</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('cart')">
+            <span class="nav-icon cart-btn-wrapper">
+                🛒
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </span>
+            <span>Корзина</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('profile')">
+            <span class="nav-icon">👤</span>
+            <span>Профиль</span>
+        </button>
+    </div>
+
+    <!-- PRODUCT DETAIL MODAL -->
+    <div class="product-detail-modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Детали товара</h2>
+                <button class="modal-close" onclick="closeProductModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-image" id="detailImage">🍎</div>
+                <div class="detail-title" id="detailTitle"></div>
+                <div class="detail-price" id="detailPrice"></div>
+                <div class="detail-description" id="detailDescription"></div>
+                
+                <div class="quantity-selector">
+                    <button class="qty-btn" onclick="decrementQty()">−</button>
+                    <div class="qty-display" id="qtyDisplay">1</div>
+                    <button class="qty-btn" onclick="incrementQty()">+</button>
+                </div>
+
+                <button class="add-to-cart-btn" onclick="addCurrentProductToCart()">Добавить в корзину</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAYMENT MODAL -->
+    <div class="payment-modal" id="paymentModal">
+        <div class="payment-box">
+            <button class="close-payment-btn" onclick="closePaymentModal()">✕</button>
+            <div class="payment-icon">💳</div>
+            <h2>Оплата заказа</h2>
+            <div class="payment-amount" id="paymentAmount">0₽</div>
+            <div class="payment-methods">
+                <div class="payment-method" onclick="processPayment('card')">
+                    💳 Карта
+                </div>
+                <div class="payment-method" onclick="processPayment('apple')">
+                    🍎 Apple Pay
+                </div>
+                <div class="payment-method" onclick="processPayment('google')">
+                    🔵 Google Pay
+                </div>
+                <div class="payment-method" onclick="processPayment('telegram')">
+                    ✈️ Telegram Stars
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div class="success-modal" id="successModal">
+        <div class="success-box">
+            <div class="success-icon">✅</div>
+            <h2>Спасибо за заказ!</h2>
+            <p>Ваш заказ принят и будет доставлен в ближайшее время</p>
+            <button class="ok-btn" onclick="closeSuccessModal()">ОК</button>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        let user = tg.initData;
+
+        // SAMPLE PRODUCTS DATA
+        const products = [
+            {
+                id: 1,
+                name: "Сидр Традиционный",
+                price: 450,
+                image: "🍎",
+                description: "Классический сидр из отборного яблока с легким медовым привкусом. Алкоголь: 4,5%, объем: 0.5л"
+            },
+            {
+                id: 2,
+                name: "Сидр Груша-Лимон",
+                price: 520,
+                image: "🍐",
+                description: "Освежающий микс из груши и лимона. Идеален для летних прогулок. Алкоголь: 5%, объем: 0.5л"
+            },
+            {
+                id: 3,
+                name: "Сидр Клубника",
+                price: 480,
+                image: "🍓",
+                description: "Ягодный сидр с естественным ароматом спелой клубники. Алкоголь: 4%, объем: 0.5л"
+            },
+            {
+                id: 4,
+                name: "Сидр Персик-Мята",
+                price: 490,
+                image: "🍑",
+                description: "Экзотический вкус персика с прохладной мятой. Для истинных гурманов. Алкоголь: 4,5%, объем: 0.5л"
+            },
+            {
+                id: 5,
+                name: "Сидр Брют",
+                price: 600,
+                image: "🥂",
+                description: "Премиум сидр с минимальным содержанием сахара. Алкоголь: 6%, объем: 0.75л"
+            },
+            {
+                id: 6,
+                name: "Сидр Детский (без алкоголя)",
+                price: 280,
+                image: "🧃",
+                description: "Натуральный яблочно-грушевый сок для детей. Здоровое лакомство. Объем: 0.25л"
+            }
+        ];
+
+        // GLOBAL STATE
+        let cart = JSON.parse(localStorage.getItem('ciderCart')) || [];
+        let orders = JSON.parse(localStorage.getItem('ciderOrders')) || [];
+        let currentProduct = null;
+        let currentQty = 1;
+
+        // INITIALIZE APP
+        function initApp() {
+            tg.ready();
+            tg.expand();
+            loadUserData();
+            renderProducts();
+            updateCartBadge();
+        }
+
+        // LOAD USER DATA
+        function loadUserData() {
+            let userInfo = tg.initDataUnsafe?.user;
+            if (userInfo) {
+                document.getElementById('userName').textContent = userInfo.first_name || 'Гость';
+                document.getElementById('userTelegram').textContent = '@' + (userInfo.username || 'user');
+            }
+        }
+
+        // RENDER PRODUCTS
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card" onclick="showProductDetail(${product.id})">
+                    <div class="product-image">${product.image}</div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">${product.price}₽</div>
+                        <button class="product-add-btn" onclick="event.stopPropagation(); addToCart(${product.id})">Добавить</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // SHOW PRODUCT DETAIL
+        function showProductDetail(productId) {
+            currentProduct = products.find(p => p.id === productId);
+            currentQty = 1;
+            
+            document.getElementById('detailImage').textContent = currentProduct.image;
+            document.getElementById('detailTitle').textContent = currentProduct.name;
+            document.getElementById('detailPrice').textContent = currentProduct.price + '₽';
+            document.getElementById('detailDescription').textContent = currentProduct.description;
+            document.getElementById('qtyDisplay').textContent = '1';
+            
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        // CLOSE PRODUCT MODAL
+        function closeProductModal() {
+            document.getElementById('productModal').classList.remove('active');
+            currentQty = 1;
+        }
+
+        // INCREMENT QUANTITY
+        function incrementQty() {
+            currentQty++;
+            document.getElementById('qtyDisplay').textContent = currentQty;
+        }
+
+        // DECREMENT QUANTITY
+        function decrementQty() {
+            if (currentQty > 1) {
+                currentQty--;
+                document.getElementById('qtyDisplay').textContent = currentQty;
+            }
+        }
+
+        // ADD CURRENT PRODUCT TO CART
+        function addCurrentProductToCart() {
+            for (let i = 0; i < currentQty; i++) {
+                addToCart(currentProduct.id);
+            }
+            closeProductModal();
+        }
+
+        // ADD TO CART
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.qty++;
+            } else {
+                cart.push({
+                    id: productId,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    qty: 1
+                });
+            }
+            
+            localStorage.setItem('ciderCart', JSON.stringify(cart));
+            updateCartBadge();
+            showToast('✅ Добавлено в корзину');
+        }
+
+        // UPDATE CART BADGE
+        function updateCartBadge() {
+            const badge = document.getElementById('cartBadge');
+            const total = cart.reduce((sum, item) => sum + item.qty, 0);
+            
+            if (total > 0) {
+                badge.textContent = total;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // SHOW TOAST
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // RENDER CART
+        function renderCart() {
+            const cartContent = document.getElementById('cartContent');
+            
+            if (cart.length === 0) {
+                cartContent.innerHTML = '<div class="empty-message">Корзина пуста</div>';
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+            
+            cartContent.innerHTML = `
+                <div class="cart-items">
+                    ${cart.map((item, index) => `
+                        <div class="cart-item">
+                            <div class="cart-item-info">
+                                <div class="cart-item-name">${item.name}</div>
+                                <div class="cart-item-price">${item.price}₽ x${item.qty}</div>
+                            </div>
+                            <div class="cart-item-qty">
+                                <button class="qty-small-btn" onclick="decrementCartItem(${index})">−</button>
+                                <span>${item.qty}</span>
+                                <button class="qty-small-btn" onclick="incrementCartItem(${index})">+</button>
+                            </div>
+                            <button class="remove-btn" onclick="removeFromCart(${index})">Удалить</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Товары:</span>
+                        <span>${cart.reduce((sum, item) => sum + item.qty, 0)} шт</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Доставка:</span>
+                        <span>150₽</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Итого:</span>
+                        <span>${total + 150}₽</span>
+                    </div>
+                </div>
+                <button class="checkout-btn" onclick="openPaymentModal(${total + 150})">Оплатить ${total + 150}₽</button>
+            `;
+        }
+
+        // INCREMENT CART ITEM
+        function incrementCartItem(index) {
+            cart[index].qty++;
+            localStorage.setItem('ciderCart', JSON.stringify(cart));
+            updateCartBadge();
+            renderCart();
+        }
+
+        // DECREMENT CART ITEM
+        function decrementCartItem(index) {
+            if (cart[index].qty > 1) {
+                cart[index].qty--;
+            } else {
+                removeFromCart(index);
+                return;
+            }
+            localStorage.setItem('ciderCart', JSON.stringify(cart));
+            updateCartBadge();
+            renderCart();
+        }
+
+        // REMOVE FROM CART
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            localStorage.setItem('ciderCart', JSON.stringify(cart));
+            updateCartBadge();
+            renderCart();
+        }
+
+        // SWITCH TAB
+        function switchTab(tabName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(tabName).classList.add('active');
+            event.target.closest('.nav-btn').classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Render cart if switching to cart
+            if (tabName === 'cart') {
+                renderCart();
+            }
+            
+            // Render profile if switching to profile
+            if (tabName === 'profile') {
+                renderProfile();
+            }
+        }
+
+        // OPEN PAYMENT MODAL
+        function openPaymentModal(total) {
+            if (cart.length === 0) {
+                showToast('❌ Корзина пуста');
+                return;
+            }
+            
+            document.getElementById('paymentAmount').textContent = total + '₽';
+            document.getElementById('paymentModal').classList.add('active');
+        }
+
+        // CLOSE PAYMENT MODAL
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('active');
+        }
+
+        // PROCESS PAYMENT
+        function processPayment(method) {
+            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0) + 150;
+            
+            // Create order
+            const order = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('ru-RU'),
+                items: [...cart],
+                total: total,
+                method: method,
+                status: 'completed'
+            };
+            
+            orders.push(order);
+            localStorage.setItem('ciderOrders', JSON.stringify(orders));
+            
+            // Clear cart
+            cart = [];
+            localStorage.setItem('ciderCart', JSON.stringify(cart));
+            updateCartBadge();
+            
+            // Show success
+            closePaymentModal();
+            document.getElementById('successModal').classList.add('active');
+        }
+
+        // CLOSE SUCCESS MODAL
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+            switchTab('products');
+        }
+
+        // RENDER PROFILE
+        function renderProfile() {
+            const totalOrders = orders.length;
+            const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
+            const totalBottles = orders.reduce((sum, order) => sum + order.items.reduce((s, item) => s + item.qty, 0), 0);
+            
+            document.getElementById('totalOrders').textContent = totalOrders;
+            document.getElementById('totalSpent').textContent = totalSpent + '₽';
+            document.getElementById('orderCount').textContent = totalBottles;
+            
+            const ordersList = document.getElementById('ordersList');
+            if (orders.length === 0) {
+                ordersList.innerHTML = '<div class="empty-message">Заказов нет</div>';
+            } else {
+                ordersList.innerHTML = orders.map(order => `
+                    <div class="order-item">
+                        <div class="order-date">Заказ #${order.id} - ${order.date}</div>
+                        <div class="order-total">${order.total}₽</div>
+                        <div style="font-size: 12px; margin-top: 5px; color: var(--tg-theme-hint-color);">Способ: ${order.method}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // LOGOUT
+        function logout() {
+            if (confirm('Вы уверены что хотите выйти?')) {
+                localStorage.removeItem('ciderCart');
+                localStorage.removeItem('ciderOrders');
+                cart = [];
+                orders = [];
+                location.reload();
+            }
+        }
+
+        // INITIALIZE ON LOAD
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
